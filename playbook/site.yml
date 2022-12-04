@@ -23,7 +23,6 @@
   tasks:
     - block:
         - name: Get clickhouse distrib
-          become: true
           ansible.builtin.get_url:
             url: "https://packages.clickhouse.com/rpm/stable/{{ item }}-{{ clickhouse_version }}.noarch.rpm"
             dest: "files/{{ item }}-{{ clickhouse_version }}.rpm"
@@ -31,7 +30,6 @@
           with_items: "{{ clickhouse_packages }}"
       rescue:
         - name: Get clickhouse distrib
-          become: true
           ansible.builtin.get_url:
             url: "https://packages.clickhouse.com/rpm/stable/clickhouse-common-static-{{ clickhouse_version }}.x86_64.rpm"
             dest: "files/clickhouse-common-static-{{ clickhouse_version }}.rpm"
@@ -88,7 +86,7 @@
         port: "{{ clickhouse_http_port }}/tcp"
         permanent: true
         state: enabled
-      notify: reload firewalld
+      notify: Reload firewalld
       tags:
         - "install clickhouse"
     - name: Start clickhouse service if need
@@ -128,7 +126,6 @@
         enabled: true
   tasks:
     - name: Download Lighthouse
-      become: true
       ansible.builtin.get_url:
         url: https://github.com/VKCOM/lighthouse/archive/refs/heads/master.zip
         dest: "files/Lighthouse.zip"
@@ -187,7 +184,6 @@
         state: restarted
   tasks:
   - name: Download Vector
-    become: true
     ansible.builtin.get_url:
       url: "{{ vector_url }}"
       dest: files/vector-{{ vector_release }}-{{ vector_version }}.x86_64.rpm
@@ -213,7 +209,6 @@
     tags:
       - "install vector"
   - name: Install vector packages
-    become: true
     ansible.builtin.yum:
       name: ./vector/vector-{{ vector_release }}-{{ vector_version }}.x86_64.rpm
       state: present
