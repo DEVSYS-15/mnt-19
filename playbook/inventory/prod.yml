@@ -1,17 +1,11 @@
 ---
-  local:
-    hosts:
-      localhost:
-        ansible_connection: local
-  el:
-    hosts:
-      centos7-netology:
-        ansible_connection: docker       
-  deb:
-    hosts:
-      ubuntu-netology:
-        ansible_connection: docker
-  fd:
-    hosts:
-      fedora-netology:
-        ansible_connection: docker
+clickhouse:
+  hosts:
+    clickhouse-01:
+      ansible_host: 172.17.2.37
+vector:
+  hosts:
+    vector-01:
+      ansible_host: 172.17.2.37
+    vector-02:
+      ansible_host: 172.17.2.36
