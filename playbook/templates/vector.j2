@@ -19,7 +19,7 @@ encoding.codec = "json"
 [sources.lastlog]
 type = "file"
 ignore_older_secs = 600
-include = [ "/var/log/*" ]
+include = [ "/var/log/dmesg" ]
 read_from = "beginning"
 
 [sinks.clickhouse]

@@ -1,29 +1,37 @@
 ---
 - name: Install Clickhouse
-  hosts: clickhouse
+  hosts:
+    - clickhouse
   handlers:
     - name: Start clickhouse service
       become: true
       ansible.builtin.systemd:
         name: clickhouse-server
         state: restarted
+        enabled: true
     - name: Reload firewalld
       become: true
       ansible.builtin.systemd:
         name: firewalld
         state: restarted
+    - name: Start httpd service
+      become: true
+      ansible.builtin.systemd:
+        name: httpd
+        state: restarted
+        enabled: true
   tasks:
-    - block: 
-      - name: Get clickhouse distrib
-        #become: true
-        ansible.builtin.get_url:
-          url: "https://packages.clickhouse.com/rpm/stable/{{ item }}-{{ clickhouse_version }}.noarch.rpm"
-          dest: "files/{{ item }}-{{ clickhouse_version }}.rpm"
-          mode: '0755'
-        with_items: "{{ clickhouse_packages }}"
+    - block:
+        - name: Get clickhouse distrib
+          become: true
+          ansible.builtin.get_url:
+            url: "https://packages.clickhouse.com/rpm/stable/{{ item }}-{{ clickhouse_version }}.noarch.rpm"
+            dest: "files/{{ item }}-{{ clickhouse_version }}.rpm"
+            mode: '0755'
+          with_items: "{{ clickhouse_packages }}"
       rescue:
         - name: Get clickhouse distrib
-          #become: true
+          become: true
           ansible.builtin.get_url:
             url: "https://packages.clickhouse.com/rpm/stable/clickhouse-common-static-{{ clickhouse_version }}.x86_64.rpm"
             dest: "files/clickhouse-common-static-{{ clickhouse_version }}.rpm"
@@ -45,9 +53,9 @@
         dest: ./clickhouse/
         mode: '0755'
       with_items:
-          - clickhouse-common-static-{{ clickhouse_version }}.rpm
-          - clickhouse-client-{{ clickhouse_version }}.rpm
-          - clickhouse-server-{{ clickhouse_version }}.rpm
+        - clickhouse-common-static-{{ clickhouse_version }}.rpm
+        - clickhouse-client-{{ clickhouse_version }}.rpm
+        - clickhouse-server-{{ clickhouse_version }}.rpm
       tags:
         - "install clickhouse"
     - name: Install clickhouse packages
@@ -55,12 +63,13 @@
       ansible.builtin.yum:
         name: "{{ item }}"
       with_items:
-          - "clickhouse/clickhouse-common-static-{{ clickhouse_version }}.rpm"
-          - "clickhouse/clickhouse-client-{{ clickhouse_version }}.rpm"
-          - "clickhouse/clickhouse-server-{{ clickhouse_version }}.rpm"
+        - "clickhouse/clickhouse-common-static-{{ clickhouse_version }}.rpm"
+        - "clickhouse/clickhouse-client-{{ clickhouse_version }}.rpm"
+        - "clickhouse/clickhouse-server-{{ clickhouse_version }}.rpm"
       notify: Start clickhouse service
       tags:
         - "install clickhouse"
+
     - name: Copy conf
       ansible.builtin.template:
         src: config.j2
@@ -71,7 +80,7 @@
       tags:
         - "config clickhouse"
         - "install clickhouse"
-    - name: Open port  clickhouse_http_port
+    - name: Open port clickhouse_http_port
       become: true
       vars:
         ansible_python_interpreter: /usr/bin/python
@@ -79,7 +88,7 @@
         port: "{{ clickhouse_http_port }}/tcp"
         permanent: true
         state: enabled
-      notify: Reload firewalld
+      notify: reload firewalld
       tags:
         - "install clickhouse"
     - name: Start clickhouse service if need
@@ -101,6 +110,73 @@
       tags:
         - "db clickhouse"
         - "install clickhouse"
+
+- name: Install Lighthouse
+  hosts:
+    - Lighthouse
+  handlers:
+    - name: Reload firewalld
+      become: true
+      ansible.builtin.systemd:
+        name: firewalld
+        state: restarted
+    - name: Start httpd service
+      become: true
+      ansible.builtin.systemd:
+        name: httpd
+        state: restarted
+        enabled: true
+  tasks:
+    - name: Download Lighthouse
+      become: true
+      ansible.builtin.get_url:
+        url: https://github.com/VKCOM/lighthouse/archive/refs/heads/master.zip
+        dest: "files/Lighthouse.zip"
+        mode: '0755'
+      delegate_to: localhost
+      run_once: true
+      tags:
+        - "install Lighthouse"
+    - name: Install packages
+      become: true
+      ansible.builtin.yum:
+        name: "{{ item }}"
+      with_items:
+        - "httpd"
+        - "unzip"
+      notify: Start httpd service
+      tags:
+        - "install Lighthouse"
+    - name: Create a directory Lighthouse if it does not exist
+      ansible.builtin.file:
+        path: ./Lighthouse
+        state: directory
+        mode: '0755'
+      tags:
+        - "install Lighthouse"
+    - name: Unarchive Lighthouse packages
+      ansible.builtin.unarchive:
+        src: "files/Lighthouse.zip"
+        dest: ./Lighthouse/
+      tags:
+        - "install Lighthouse"
+    - name: Copy Lighthouse to /var/www/html/
+      ansible.builtin.copy:
+        src: ./Lighthouse/lighthouse-master/
+        dest: /var/www/html/
+        remote_src: true
+        mode: '0755'
+      tags:
+        - "install Lighthouse"
+    - name: Open port for Lighthouse
+      become: true
+      vars:
+        ansible_python_interpreter: /usr/bin/python
+      ansible.posix.firewalld:
+        port: "80/tcp"
+        permanent: true
+        state: enabled
+      notify: Reload firewalld
 - name: Install Vector
   hosts: vector
   handlers:
@@ -111,7 +187,7 @@
         state: restarted
   tasks:
   - name: Download Vector
-    #become: true
+    become: true
     ansible.builtin.get_url:
       url: "{{ vector_url }}"
       dest: files/vector-{{ vector_release }}-{{ vector_version }}.x86_64.rpm
@@ -120,6 +196,7 @@
     run_once: true
     tags:
       - "install vector"
+
   - name: Create a directory Vector if it does not exist
     ansible.builtin.file:
       path: ./vector
@@ -127,6 +204,7 @@
       mode: '0755'
     tags:
       - "install vector"
+
   - name: Copy Vector packages
     ansible.builtin.copy:
       src: vector-{{ vector_release }}-{{ vector_version }}.x86_64.rpm
