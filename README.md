@@ -1,28 +1,36 @@
-# Домашнее задание к занятию "08.03 Использование Yandex Cloud"
+# Playbook для установки vector и clickhouse Lighthouse"
 
-## Подготовка к выполнению
+## Параметры
+### all/vars.yml
+1. clickhouse_http_port: "8123" 
+    - позволяет выбрать порт для собедления в 
+    /etc/clickhouse-server/config.xml, /etc/vector.toml и открыть его 
+### Сlickhouse/vars.yml
+1. ### clickhouse_packages
+   ```
+   - clickhouse-client
+   - clickhouse-server
+   - clickhouse-common-static
+   ```
+- список пакетов clickhouse
+2. ### clickhouse_version: "22.3.3.44"
+- версия clickhouse
+### vector/vars.yml
+1. ### vector_version: "1"
+- версия резила vector
+2. ### vector_release: "0.22.2"
+- релиз vector
+3. ### vector_url: "https://packages.timber.io/vector/{{ vector_release }}/vector-{{ vector_release }}-{{ vector_version }}.x86_64.rpm"
+- ссыдка для скачивания vector
+###  Теги
+```
+- "install clickhouse" 
+- "config clickhouse"
+- "db clickhouse"
+- "install Lighthouse"
+- "install vector"
+- "config vector" 
+```
+### совметивмовсть 
+- centos7
 
-1. Подготовьте в Yandex Cloud три хоста: для `clickhouse`, для `vector` и для `lighthouse`.
-
-Ссылка на репозиторий LightHouse: https://github.com/VKCOM/lighthouse
-
-## Основная часть
-
-1. Допишите playbook: нужно сделать ещё один play, который устанавливает и настраивает lighthouse.
-2. При создании tasks рекомендую использовать модули: `get_url`, `template`, `yum`, `apt`.
-3. Tasks должны: скачать статику lighthouse, установить nginx или любой другой webserver, настроить его конфиг для открытия lighthouse, запустить webserver.
-4. Приготовьте свой собственный inventory файл `prod.yml`.
-5. Запустите `ansible-lint site.yml` и исправьте ошибки, если они есть.
-6. Попробуйте запустить playbook на этом окружении с флагом `--check`.
-7. Запустите playbook на `prod.yml` окружении с флагом `--diff`. Убедитесь, что изменения на системе произведены.
-8. Повторно запустите playbook с флагом `--diff` и убедитесь, что playbook идемпотентен.
-9. Подготовьте README.md файл по своему playbook. В нём должно быть описано: что делает playbook, какие у него есть параметры и теги.
-10. Готовый playbook выложите в свой репозиторий, поставьте тег `08-ansible-03-yandex` на фиксирующий коммит, в ответ предоставьте ссылку на него.
-[ссфлка на репозтторий с playbook ](https://github.com/DEVSYS-15/mnt-19/tree/08-ansible-03-yandex))
----
-
-### Как оформить ДЗ?
-
-Выполненное домашнее задание пришлите ссылкой на .md-файл в вашем репозитории.
-
----
