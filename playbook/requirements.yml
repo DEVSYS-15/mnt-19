@@ -1,0 +1,13 @@
+---
+  - src: git@github.com:DEVSYS-15/vector-role.git
+    scm: git
+    version: "1.0.1"
+    name: DEVSYS-15.Vector 
+  - src: git@github.com:DEVSYS-15/Lighthouse-role.git
+    scm: git
+    version: "1.0.1"
+    name: DEVSYS-15.Lighthouse
+  - src: git@github.com:AlexeySetevoi/ansible-clickhouse.git
+    scm: git
+    version: "1.11.0"
+    name: my_clickhouse 

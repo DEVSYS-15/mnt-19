@@ -1,2 +1,4 @@
 ---
-clickhouse_http_port: "8123"
+clickhouse_listen_host_default:
+  - "::1"
+  - "0.0.0.0"
